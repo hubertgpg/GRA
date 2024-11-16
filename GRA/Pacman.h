@@ -5,6 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+
 class Pacman {
 public:
     Pacman();
@@ -13,6 +14,9 @@ public:
     void draw(sf::RenderWindow& window);
     sf::Vector2f getPosition() const;
     void centerOnTile();
+
+    sf::Vector2f getDirection() const;
+    sf::FloatRect getBounds() const;
 
 private:
     sf::Sprite sprite;
@@ -31,4 +35,4 @@ private:
     int getDirectionIndex() const;
 };
 
-#endif // PACMAN_H
+#endif

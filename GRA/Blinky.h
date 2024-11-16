@@ -1,23 +1,38 @@
-#pragma once
 #ifndef BLINKY_H
 #define BLINKY_H
 
 #include <SFML/Graphics.hpp>
 #include "Pacman.h"
+#include <vector>
+#include <SFML/System/Vector2.hpp>
+#include <functional>
+#include "Vector2Hash.h"
+
+
 
 class Blinky {
 public:
-    Blinky(const Pacman& pacman);
-    void update(float deltaTime);
+    Blinky(const Pacman& pacman, const sf::RectangleShape& ghostRoomDoor);
+    void update(float deltaTime, const std::vector<sf::RectangleShape>& walls);
     void draw(sf::RenderWindow& window);
+    sf::Vector2f getPosition() const;
+    sf::FloatRect getBounds() const;
 
 private:
-    const Pacman& pacman; // Referencja do Pacmana, by znaæ jego pozycjê
-    sf::Sprite sprite;
+    const Pacman& pacman;
+    const sf::RectangleShape* ghostRoomDoor;
     sf::Texture texture;
+    sf::Sprite sprite;
     float speed;
+    sf::Vector2f direction;
+    sf::Vector2f pendingDirection;
 
-    sf::Vector2f getDirectionTowardsPacman() const;
+    void updateDirection();
+    bool canMoveInDirection(const sf::Vector2f& dir, float deltaTime, const std::vector<sf::RectangleShape>& walls);
+    void centerOnTile();
+    bool checkCollision(const sf::FloatRect& bounds, const sf::RectangleShape& wall);
 };
 
-#endif // BLINKY_H
+
+
+#endif

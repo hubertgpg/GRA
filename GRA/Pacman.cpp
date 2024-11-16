@@ -1,14 +1,13 @@
 #include "Pacman.h"
+#include "MapData.h"
 #include <cmath>
 #include <string>
 
-const int tileSize = 40;
-const float wallShrinkFactor = 0.95f;
-const float pacmanSpeed = 110.f;
+const float pacmanSpeed = 200.f;
 
 Pacman::Pacman() : direction(0.f, 0.f), pendingDirection(0.f, 0.f), speed(pacmanSpeed), animationFrame(0), animationTimer(0.f) {
     loadTextures();
-    sprite.setTexture(textures[1][0]); // Domyœlna tekstura to 'down' z zamkniêt¹ buzi¹
+    sprite.setTexture(textures[1][0]);
     sprite.setScale(
         (tileSize * wallShrinkFactor - 2.f) / textures[0][0].getSize().x,
         (tileSize * wallShrinkFactor - 2.f) / textures[0][0].getSize().y
@@ -130,4 +129,12 @@ sf::Vector2f Pacman::getPosition() const {
 
 void Pacman::draw(sf::RenderWindow& window) {
     window.draw(sprite);
+}
+
+sf::Vector2f Pacman::getDirection() const {
+    return direction;
+}
+
+sf::FloatRect Pacman::getBounds() const {
+    return sprite.getGlobalBounds();
 }

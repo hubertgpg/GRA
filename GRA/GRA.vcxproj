@@ -119,6 +119,7 @@
       <PreprocessorDefinitions>SFML_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>"C:\Users\huber\OneDrive\Pulpit\C++ SFML\SFML-2.6.1\include"</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,13 +132,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Blinky.cpp" />
+    <ClCompile Include="Clyde.cpp" />
+    <ClCompile Include="Inky.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Pacman.cpp" />
+    <ClCompile Include="Pathfinding.cpp" />
+    <ClCompile Include="Pinky.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blinky.h" />
+    <ClInclude Include="Clyde.h" />
+    <ClInclude Include="Inky.h" />
     <ClInclude Include="MapData.h" />
     <ClInclude Include="Pacman.h" />
+    <ClInclude Include="Pathfinding.h" />
+    <ClInclude Include="Pinky.h" />
+    <ClInclude Include="Vector2Hash.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
