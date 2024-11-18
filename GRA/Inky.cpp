@@ -2,7 +2,14 @@
 #include "MapData.h"
 #include "Pathfinding.h"
 #include <cmath>
-#include <functional>
+#include <random>
+
+// Funkcja do losowania liczb ca³kowitych w zakresie
+int randomInt(int min, int max) {
+    static std::mt19937 rng(std::random_device{}());
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(rng);
+}
 
 sf::Vector2f Inky::getPosition() const {
     return sprite.getPosition();
@@ -16,37 +23,20 @@ Inky::Inky(const Pacman& pacman, const Blinky& blinky, const sf::RectangleShape&
         (tileSize * wallShrinkFactor - 2.f) / texture.getSize().x,
         (tileSize * wallShrinkFactor - 2.f) / texture.getSize().y
     );
-    sprite.setPosition(8 * tileSize, 7 * tileSize);  
+    sprite.setPosition(8 * tileSize, 7 * tileSize);
+    targetTile = worldToGrid(sprite.getPosition()); // Pocz¹tkowy cel to aktualna pozycja
 }
 
 void Inky::updateDirection(const std::vector<sf::RectangleShape>& walls) {
     sf::Vector2i inkyGrid = worldToGrid(sprite.getPosition());
-    sf::Vector2i pacmanGrid = worldToGrid(pacman.getPosition());
-    sf::Vector2i blinkyGrid = worldToGrid(blinky.getPosition());
 
-    
-    sf::Vector2f pacmanDir = pacman.getDirection();
-    sf::Vector2i targetGrid = pacmanGrid;
-
-    if (pacmanDir.x > 0) { 
-        targetGrid.x += 2;
-    }
-    else if (pacmanDir.x < 0) { 
-        targetGrid.x -= 2;
-    }
-    else if (pacmanDir.y > 0) { 
-        targetGrid.y += 2;
-    }
-    else if (pacmanDir.y < 0) { 
-        targetGrid.y -= 2;
+    // Jeœli Inky osi¹gn¹³ cel, losuje nowe wspó³rzêdne celu
+    if (inkyGrid == targetTile) {
+        targetTile = getRandomWalkableTile(walls);
     }
 
-    
-    targetGrid.x = 2 * targetGrid.x - blinkyGrid.x;
-    targetGrid.y = 2 * targetGrid.y - blinkyGrid.y;
-
-    
-    std::vector<sf::Vector2i> path = bfs(inkyGrid, targetGrid);
+    // ZnajdŸ œcie¿kê do celu
+    std::vector<sf::Vector2i> path = bfs(inkyGrid, targetTile);
 
     if (!path.empty() && path.size() > 1) {
         sf::Vector2i nextStep = path[1];
@@ -54,6 +44,28 @@ void Inky::updateDirection(const std::vector<sf::RectangleShape>& walls) {
 
         pendingDirection = sf::Vector2f(moveDirection.x, moveDirection.y);
     }
+}
+
+sf::Vector2i Inky::getRandomWalkableTile(const std::vector<sf::RectangleShape>& walls) {
+    sf::Vector2i randomTile;
+    bool valid = false;
+
+    // Losuj dopóki nie znajdziesz pola, które nie koliduje z murem
+    do {
+        randomTile = { randomInt(0, mapWidth - 1), randomInt(0, mapHeight - 1) };
+        sf::Vector2f worldPos = gridToWorld(randomTile);
+
+        // SprawdŸ kolizjê z murami
+        valid = true;
+        for (const auto& wall : walls) {
+            if (wall.getGlobalBounds().contains(worldPos)) {
+                valid = false;
+                break;
+            }
+        }
+    } while (!valid);
+
+    return randomTile;
 }
 
 void Inky::update(float deltaTime, const std::vector<sf::RectangleShape>& walls) {

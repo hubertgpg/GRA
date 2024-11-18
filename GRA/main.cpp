@@ -6,6 +6,12 @@
 #include "Inky.h"
 #include "Clyde.h"
 #include <vector>
+#include "menu.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <string>
+
 
 const float pacmanSpeed = 110.f;
 const int sidebarWidth = 200;
@@ -167,19 +173,33 @@ void Game::update(float deltaTime) {
 
         scoreText.setString("Score: " + std::to_string(score));
 
-        
         if (pacman.getBounds().intersects(blinky.getBounds()) ||
             pacman.getBounds().intersects(pinky.getBounds()) ||
             pacman.getBounds().intersects(inky.getBounds()) ||
             pacman.getBounds().intersects(clyde.getBounds())) {
             gameState = "GAME_OVER";
+
+            // Zapisz wynik do pliku
+            std::ofstream file("scores.txt", std::ios::app);
+            if (file.is_open()) {
+                file << score << "\n";
+                file.close();
+            }
         }
 
         if (map.getDots().empty()) {
             gameState = "WIN";
+
+            // Zapisz wynik do pliku
+            std::ofstream file("scores.txt", std::ios::app);
+            if (file.is_open()) {
+                file << score << "\n";
+                file.close();
+            }
         }
     }
 }
+
 
 void Game::releaseNextGhost() {
     if (ghostReleaseCounter < ghostInHouse.size()) {
@@ -220,8 +240,81 @@ void Game::render() {
     window.display();
 }
 
+
+
+
+std::string loadScores(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        return "No scores available.";
+    }
+
+    std::stringstream scoresStream;
+    std::string line;
+    int position = 1; // Pozycja wyniku na liœcie
+    while (std::getline(file, line)) {
+        scoresStream << position++ << ". " << line << "\n";
+    }
+
+    return scoresStream.str();
+}
+
 int main() {
-    Game game;
-    game.run();
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Pacman Menu");
+    Menu menu(800, 600);
+
+    sf::Font font;
+    if (!font.loadFromFile("ChainsawGeometric.ttf")) {
+        std::cerr << "Error loading font" << std::endl;
+        return -1;
+    }
+
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+
+            int action = menu.handleInput(event);
+            if (action != -1) {
+                if (action == 0) {
+                    // Start the game
+                    Game game;
+                    game.run();
+                }
+                else if (action == 1) {
+                    // Display scores
+                    window.clear();
+                    sf::Text scoresText;
+                    scoresText.setFont(font);
+                    scoresText.setCharacterSize(24);
+                    scoresText.setFillColor(sf::Color::White);
+                    scoresText.setString("Scores:\n\n" + loadScores("scores.txt"));
+                    scoresText.setPosition(50, 50);
+
+                    window.draw(scoresText);
+                    window.display();
+
+                    // Oczekuj na dowolne zdarzenie zamykaj¹ce podgl¹d wyników
+                    while (true) {
+                        sf::Event scoreEvent;
+                        if (window.pollEvent(scoreEvent) && scoreEvent.type == sf::Event::KeyPressed) {
+                            break;
+                        }
+                    }
+                }
+                else if (action == 2) {
+                    // Exit
+                    window.close();
+                }
+            }
+        }
+
+        window.clear();
+        menu.draw(window);
+        window.display();
+    }
+
     return 0;
 }

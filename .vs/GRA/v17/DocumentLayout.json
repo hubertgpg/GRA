@@ -1,37 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\huber\\OneDrive\\Pulpit\\C\u002B\u002B SFML\\GRA\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{D2A53F45-B235-4D4B-80B6-82CEAB0C0558}|GRA\\GRA.vcxproj|C:\\Users\\huber\\OneDrive\\Pulpit\\C\u002B\u002B SFML\\GRA\\GRA\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{D2A53F45-B235-4D4B-80B6-82CEAB0C0558}|GRA\\GRA.vcxproj|solutionrelative:GRA\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\huber\\OneDrive\\Pulpit\\C\u002B\u002B SFML\\GRA\\GRA\\main.cpp",
-              "RelativeDocumentMoniker": "GRA\\main.cpp",
-              "ToolTip": "C:\\Users\\huber\\OneDrive\\Pulpit\\C\u002B\u002B SFML\\GRA\\GRA\\main.cpp",
-              "RelativeToolTip": "GRA\\main.cpp",
-              "ViewState": "AQIAAH8AAAAAAAAAAAAAAAcAAAARAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2024-11-16T18:05:50.802Z",
-              "EditorCaption": ""
-            }
-          ]
-        }
-      ]
+      "DocumentGroups": []
     }
   ]
 }

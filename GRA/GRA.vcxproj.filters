@@ -36,6 +36,9 @@
     <ClCompile Include="Clyde.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="menu.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MapData.h">
@@ -60,6 +63,9 @@
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
     <ClInclude Include="Clyde.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="menu.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
   </ItemGroup>

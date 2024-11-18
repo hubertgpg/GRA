@@ -135,6 +135,7 @@
     <ClCompile Include="Clyde.cpp" />
     <ClCompile Include="Inky.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="menu.cpp" />
     <ClCompile Include="Pacman.cpp" />
     <ClCompile Include="Pathfinding.cpp" />
     <ClCompile Include="Pinky.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="Clyde.h" />
     <ClInclude Include="Inky.h" />
     <ClInclude Include="MapData.h" />
+    <ClInclude Include="menu.h" />
     <ClInclude Include="Pacman.h" />
     <ClInclude Include="Pathfinding.h" />
     <ClInclude Include="Pinky.h" />

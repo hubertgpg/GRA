@@ -17,7 +17,6 @@ public:
     sf::Vector2f getPosition() const;
     sf::FloatRect getBounds() const;
 
-
 private:
     const Pacman& pacman;
     const Blinky& blinky;
@@ -27,12 +26,13 @@ private:
     float speed;
     sf::Vector2f direction;
     sf::Vector2f pendingDirection;
+    sf::Vector2i targetTile;
 
     void updateDirection(const std::vector<sf::RectangleShape>& walls);
+    sf::Vector2i getRandomWalkableTile(const std::vector<sf::RectangleShape>& walls);
     bool canMoveInDirection(const sf::Vector2f& dir, float deltaTime, const std::vector<sf::RectangleShape>& walls);
     void centerOnTile();
     bool checkCollision(const sf::FloatRect& bounds, const sf::RectangleShape& wall);
-    std::vector<sf::Vector2f> getPossibleDirections(const sf::Vector2i& gridPos, const std::vector<sf::RectangleShape>& walls);
 };
 
 #endif
