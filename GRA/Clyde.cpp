@@ -2,7 +2,6 @@
 #include "MapData.h"
 #include "Pathfinding.h"
 #include <cmath>
-#include <iostream> 
 
 sf::Vector2f Clyde::getPosition() const {
     return sprite.getPosition();
@@ -16,19 +15,15 @@ Clyde::Clyde(const Pacman& pacman, const sf::RectangleShape& ghostRoomDoor)
         (tileSize * wallShrinkFactor - 2.f) / texture.getSize().x,
         (tileSize * wallShrinkFactor - 2.f) / texture.getSize().y
     );
-    sprite.setPosition(10 * tileSize, 7 * tileSize); 
+    sprite.setPosition(10 * tileSize, 7 * tileSize);
 }
 
 void Clyde::updateDirection() {
     sf::Vector2i clydeGrid = worldToGrid(sprite.getPosition());
     sf::Vector2i targetGrid = chasingPacman ? worldToGrid(pacman.getPosition()) : scatterTarget;
 
-    std::cout << "Clyde position: " << clydeGrid.x << ", " << clydeGrid.y
-        << " Target: " << targetGrid.x << ", " << targetGrid.y << std::endl;
-
     if (!chasingPacman && clydeGrid == scatterTarget) {
         chasingPacman = true;
-        std::cout << "Clyde reached scatter target. Resuming Pacman chase." << std::endl;
         return;
     }
 
@@ -39,19 +34,23 @@ void Clyde::updateDirection() {
         sf::Vector2i moveDirection = nextStep - clydeGrid;
 
         pendingDirection = sf::Vector2f(moveDirection.x, moveDirection.y);
-        std::cout << "Clyde next step: " << nextStep.x << ", " << nextStep.y
-            << " Direction: " << pendingDirection.x << ", " << pendingDirection.y << std::endl;
     }
     else {
-        std::cout << "Path is empty. Clyde stands still." << std::endl;
         pendingDirection = { 0.f, 0.f };
     }
 }
 
 void Clyde::update(float deltaTime, const std::vector<sf::RectangleShape>& walls) {
-    if (chasingPacman && distanceToPacman() < 6.f * tileSize) {
-        chasingPacman = false;
-        std::cout << "Clyde is too close to Pacman. Switching to scatter mode." << std::endl;
+    float distance = distanceToPacman();
+
+    
+    if (chasingPacman && distance < 6.f * tileSize) {
+        chasingPacman = false; 
+    }
+
+    
+    if (!chasingPacman && distance > 8.f * tileSize) {
+        chasingPacman = true; 
     }
 
     updateDirection();
@@ -59,7 +58,6 @@ void Clyde::update(float deltaTime, const std::vector<sf::RectangleShape>& walls
     if (pendingDirection != direction && canMoveInDirection(pendingDirection, deltaTime, walls)) {
         direction = pendingDirection;
         centerOnTile();
-        std::cout << "Direction updated: " << direction.x << ", " << direction.y << std::endl;
     }
 
     sf::Vector2f movement = direction * speed * deltaTime;
@@ -70,7 +68,6 @@ void Clyde::update(float deltaTime, const std::vector<sf::RectangleShape>& walls
         if (&wall != ghostRoomDoor && checkCollision(sprite.getGlobalBounds(), wall)) {
             sprite.move(-movement);
             collided = true;
-            std::cout << "Collision detected. Clyde repositioned." << std::endl;
             break;
         }
     }
@@ -79,6 +76,7 @@ void Clyde::update(float deltaTime, const std::vector<sf::RectangleShape>& walls
         direction = { 0.f, 0.f };
     }
 }
+
 
 void Clyde::draw(sf::RenderWindow& window) {
     window.draw(sprite);
@@ -89,7 +87,6 @@ bool Clyde::canMoveInDirection(const sf::Vector2f& dir, float deltaTime, const s
     sprite.setPosition(nextPosition);
     for (const auto& wall : walls) {
         if (&wall != ghostRoomDoor && checkCollision(sprite.getGlobalBounds(), wall)) {
-            std::cout << "Wall detected at direction: " << dir.x << ", " << dir.y << std::endl;
             sprite.move(-dir * static_cast<float>(tileSize));
             return false;
         }

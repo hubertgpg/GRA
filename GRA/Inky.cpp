@@ -4,7 +4,7 @@
 #include <cmath>
 #include <random>
 
-// Funkcja do losowania liczb ca³kowitych w zakresie
+
 int randomInt(int min, int max) {
     static std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<int> dist(min, max);
@@ -24,18 +24,18 @@ Inky::Inky(const Pacman& pacman, const Blinky& blinky, const sf::RectangleShape&
         (tileSize * wallShrinkFactor - 2.f) / texture.getSize().y
     );
     sprite.setPosition(8 * tileSize, 7 * tileSize);
-    targetTile = worldToGrid(sprite.getPosition()); // Pocz¹tkowy cel to aktualna pozycja
+    targetTile = worldToGrid(sprite.getPosition()); 
 }
 
 void Inky::updateDirection(const std::vector<sf::RectangleShape>& walls) {
     sf::Vector2i inkyGrid = worldToGrid(sprite.getPosition());
 
-    // Jeœli Inky osi¹gn¹³ cel, losuje nowe wspó³rzêdne celu
+    
     if (inkyGrid == targetTile) {
         targetTile = getRandomWalkableTile(walls);
     }
 
-    // ZnajdŸ œcie¿kê do celu
+    
     std::vector<sf::Vector2i> path = bfs(inkyGrid, targetTile);
 
     if (!path.empty() && path.size() > 1) {
@@ -50,12 +50,12 @@ sf::Vector2i Inky::getRandomWalkableTile(const std::vector<sf::RectangleShape>& 
     sf::Vector2i randomTile;
     bool valid = false;
 
-    // Losuj dopóki nie znajdziesz pola, które nie koliduje z murem
+    
     do {
         randomTile = { randomInt(0, mapWidth - 1), randomInt(0, mapHeight - 1) };
         sf::Vector2f worldPos = gridToWorld(randomTile);
 
-        // SprawdŸ kolizjê z murami
+        
         valid = true;
         for (const auto& wall : walls) {
             if (wall.getGlobalBounds().contains(worldPos)) {

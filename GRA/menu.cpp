@@ -1,12 +1,14 @@
 #include "menu.h"
 #include <iostream>
+#include "Gwiazdozbior.h"
 
-Menu::Menu(float width, float height) : selectedItemIndex(0) {
+Menu::Menu(float width, float height, Gwiazdozbior* gwiazdozbiorPtr)
+    : selectedItemIndex(0), gwiazdozbior(gwiazdozbiorPtr) {
     if (!font.loadFromFile("ChainsawGeometric.ttf")) {
         std::cerr << "Error loading font" << std::endl;
     }
 
-    // Title
+    
     title.setFont(font);
     title.setString("PACMAN");
     title.setCharacterSize(50);
@@ -15,7 +17,7 @@ Menu::Menu(float width, float height) : selectedItemIndex(0) {
     title.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
     title.setPosition(width / 2.0f, height / 6.0f);
 
-    // Menu options
+    
     std::vector<std::string> menuItems = { "Play", "Scores", "Exit" };
     for (size_t i = 0; i < menuItems.size(); ++i) {
         sf::Text option;
@@ -33,6 +35,7 @@ Menu::Menu(float width, float height) : selectedItemIndex(0) {
 }
 
 void Menu::draw(sf::RenderWindow& window) {
+    gwiazdozbior->draw();
     window.draw(title);
     for (const auto& option : options) {
         window.draw(option);
@@ -55,5 +58,5 @@ int Menu::handleInput(sf::Event& event) {
             return selectedItemIndex;
         }
     }
-    return -1; // No action taken
+    return -1; 
 }
