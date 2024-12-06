@@ -16,6 +16,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <locale>
 
 // funkcja formatujaca czas na format mm:ss
 std::string formatTime(float timeInSeconds) {
@@ -149,7 +150,7 @@ Game::Game()
     isPaused(false) {
 
     // ladowanie czcionki
-    if (!font.loadFromFile("ChainsawGeometric.ttf")) {
+    if (!font.loadFromFile("MadimiOne-Regular.ttf")) {
         std::cerr << "Error loading font" << std::endl;
     }
 
@@ -176,7 +177,7 @@ Game::Game()
 
     // konfiguracja napisu "WYGRALES!"
     winText.setFont(font);
-    winText.setString("Congratulations, you won!");
+    winText.setString(L"GRATULACJE U¯YTKOWNIKU, WYGRA£EŒ");
     winText.setCharacterSize(50);
     winText.setFillColor(sf::Color::Yellow);
 
@@ -300,8 +301,8 @@ void Game::update(float deltaTime) {
         blinky.update(deltaTime, map.getGhostWalls());
 
         // aktualizacja tekstów
-        scoreText.setString("Score: " + std::to_string(score));
-        timeText.setString("Time: " + formatTime(gameTime));
+        scoreText.setString("Punkty: " + std::to_string(score));
+        timeText.setString("Czas: " + formatTime(gameTime));
 
         // zakoñczenie gry po zderzeniu pacmana z duszkiem
         if (pacman.getBounds().intersects(blinky.getBounds()) ||
@@ -373,7 +374,7 @@ void Game::render() {
             // wyœwietlanie napisu przegranej
             sf::Text gameOverText;
             gameOverText.setFont(font);
-            gameOverText.setString("GAME OVER");
+            gameOverText.setString("KONIEC GRY");
             gameOverText.setCharacterSize(50);
             gameOverText.setFillColor(sf::Color::Red);
             sf::FloatRect textBounds = gameOverText.getLocalBounds();
@@ -416,7 +417,7 @@ int main() {
 
     // wczytanie czcionki
     sf::Font font;
-    if (!font.loadFromFile("ChainsawGeometric.ttf")) {
+    if (!font.loadFromFile("MadimiOne-Regular.ttf")) {
         std::cerr << "Blad ladowania czcionki" << std::endl;
         return -1; // zakoncz program w przypadku bledu
     }
@@ -428,23 +429,23 @@ int main() {
     instructionsText.setFont(font);
     instructionsText.setCharacterSize(18);
     instructionsText.setFillColor(sf::Color::White);
-    instructionsText.setString("Witaj uzytkowniku w grze imitujacej gre PACMAN.\n\n"
-        "Twoim zadaniem jako tytulowy PACMAN jest \n"
-        "unikanie duszkow oraz zbieranie groszkow,\n"
-        "ktore daja ci punkty (1 groszek - 10 punktow).\n\n"
-        "W grze znajduja sie 4 duszki:\n"
-        "- Blinky, ktory bedzie cie scigal\n"
-        "- Pinky, ktory bedzie probowal zablokowac ci droge\n"
-        "- Inky, ktory porusza sie calkowicie losowo\n"
-        "- Clyde, ktory jest troche strachliwy\n\n"
-        "Pacmanem steruje sie za pomoca strzalek.\n\n"
-        "Gdy duszek cie zlapie gra sie konczy.\n"
-        "W trakcie gry wciskajac klawisz ESC mozesz ja zatrzymac\n\n"
-        "W Menu poruszamy sie strzalkami i wybieramy opcje\n"
-        "wciskajac klawisz ENTER,\n\n"
-        "tym samym klawiszem zamykamy gre w razie zwyciestwa\n"
-        "lub porazki\n"
-        "Powodzenia!!!");
+    instructionsText.setString(L"Witaj u¿ytkowniku w grze imituj¹cej grê PACMAN.\n\n"
+                            L"Twoim zadaniem jako tytu³owy PACMAN jest \n"
+                            L"unikanie duszków oraz zbieranie groszków,\n"
+                            L"które daj¹ ci punkty (1 groszek - 10 punktów).\n\n"
+                            L"W grze znajduj¹ siê 4 duszki:\n"
+                            L"- Blinky, który bêdzie ciê œciga³\n"
+                            L"- Pinky, który bêdzie próbowa³ zablokowaæ ci drogê\n"
+                            L"- Inky, który porusza siê ca³kowicie losowo\n"
+                            L"- Clyde, który jest trochê strachliwy\n\n"
+                            L"Pacmanem steruje siê za pomoc¹ strza³ek.\n\n"
+                            L"Gdy duszek ciê z³apie gra siê koñczy.\n"
+                            L"W trakcie gry, wciskaj¹c klawisz ESC, mo¿esz j¹ zatrzymaæ.\n\n"
+                            L"W Menu poruszamy siê strza³kami i wybieramy opcje\n"
+                            L"wciskaj¹c klawisz ENTER.\n\n"
+                            L"Tym samym klawiszem zamykamy grê w razie zwyciêstwa\n"
+                            L"lub pora¿ki.\n\n"
+                            L"Powodzenia!!!");
     instructionsText.setPosition(50, 50);
 
     // glowna petla programu
@@ -520,6 +521,10 @@ int main() {
     return 0; // zakonczenie programu
 }
 
+
+
+
+// Serdeczne podziêkowania dla twórców tekstur i czcionki.
 // -----------------------------------------------------------------------------
 // Tekstury u¿yte w tej grze s¹ darmowe i pochodz¹ z nastêpuj¹cego Ÿród³a:
 // Autor: Pixelaholic
@@ -528,8 +533,8 @@ int main() {
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// Czcionka u¿yta w tej grze ("ChainsawGeometric.ttf") jest darmowa i pochodzi z:
-// Autor: Nick Curtis
-// Link: https://www.1001fonts.com/chainsaw-geometric-font.html
-// Licencja: Darmowe do u¿ytku osobistego i komercyjnego (zgodnie z warunkami na stronie).
+// Czcionka u¿yta w tej grze ("MadimiOne-Regular.ttf") jest darmowa i pochodzi z:
+// Autor: Taurai Valerie Mtake, Mirko Velimiroviæ
+// Link: https://fonts.google.com/specimen/Madimi+One
+// Licencja: SIL OFL 1.1.
 // -----------------------------------------------------------------------------
