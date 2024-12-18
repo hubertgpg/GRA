@@ -99,6 +99,8 @@ class Game {
 public:
     Game();
     void run(); // glowna petla gry
+    int getScore() const { return score; }
+
 
 private:
     // elementy gry
@@ -132,6 +134,7 @@ private:
     void update(float deltaTime);       // aktualizacja gry
     void render();                      // renderowanie gry
     void releaseNextGhost();            // uwolnienie kolejnego duszka
+
 };
 
 // konstruktor gry
@@ -194,7 +197,7 @@ Game::Game()
 
     // konfiguracja napisu pauzy
     pauseText.setFont(font);
-    pauseText.setString("PAUSE");
+    pauseText.setString("Pauza");
     pauseText.setCharacterSize(50);
     pauseText.setFillColor(sf::Color::White);
 
@@ -204,6 +207,7 @@ Game::Game()
     pauseText.setPosition((mapWidth * tileSize + sidebarWidth) / 2.0f, (mapHeight * tileSize) / 2.0f);
     pauseText.setOutlineThickness(2);
     pauseText.setOutlineColor(sf::Color::Black);
+
 }
 
 // glowna petla gry
@@ -243,33 +247,82 @@ void Game::run() {
     }
 }
 
-// zapisywanie wyniku do pliku
-void saveScore(int score, const std::string& filename) {
-    std::vector<int> scores;
+// funkcja do wczytania nazwy gracza
+std::string getPlayerName(sf::RenderWindow& window, sf::Font& font) {
+    sf::Text promptText(L"Podaj nazwe gracza: ", font, 24);
+    promptText.setFillColor(sf::Color::White);
+    promptText.setPosition(50, 50);
+
+    sf::Text inputText("", font, 24);
+    inputText.setFillColor(sf::Color::White);
+    inputText.setPosition(50, 100);
+
+    std::string playerName;
+    while (window.isOpen()) {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+
+            if (event.type == sf::Event::TextEntered) {
+                if (event.text.unicode == '\b') {
+                    // usun znak, jesli wcisnieto backspace
+                    if (!playerName.empty()) {
+                        playerName.pop_back();
+                    }
+                }
+                else if (event.text.unicode == '\r') {
+                    // potwierdz wprowadzenie przy enter
+                    if (!playerName.empty()) {
+                        return playerName;
+                    }
+                }
+                else if (event.text.unicode < 128) {
+                    playerName += static_cast<char>(event.text.unicode);
+                }
+            }
+        }
+
+        // aktualizacja tekstu wprowadzonego przez uzytkownika
+        inputText.setString(playerName);
+
+        // renderowanie promptu i inputu
+        window.clear();
+        window.draw(promptText);
+        window.draw(inputText);
+        window.display();
+    }
+
+    return playerName; // powrot, jesli okno zostalo zamkniete
+}
+
+// funkcja do zapisywania wynikow z nazwa gracza
+void saveScore(const std::string& playerName, int score, const std::string& filename) {
+    std::vector<std::string> scores;
 
     // odczytanie wynikow z pliku
     std::ifstream inputFile(filename);
     if (inputFile.is_open()) {
-        int currentScore;
-        while (inputFile >> currentScore) {
-            scores.push_back(currentScore);
+        std::string line;
+        while (std::getline(inputFile, line)) {
+            scores.push_back(line);
         }
         inputFile.close();
     }
 
     // dodanie nowego wyniku
-    scores.push_back(score);
+    scores.push_back(playerName + ": " + std::to_string(score));
 
     // ograniczenie liczby zapisanych wynikow do 15
     if (scores.size() > 15) {
-        scores.clear();
-        scores.push_back(score);
+        scores.erase(scores.begin(), scores.end() - 15);
     }
 
     // zapisanie wynikow do pliku
     std::ofstream outputFile(filename, std::ios::trunc);
     if (outputFile.is_open()) {
-        for (int s : scores) {
+        for (const std::string& s : scores) {
             outputFile << s << "\n";
         }
         outputFile.close();
@@ -294,7 +347,7 @@ void Game::update(float deltaTime) {
             releaseNextGhost();
         }
 
-        // aktualizacja duszków
+        // aktualizacja duszkow
         if (!ghostInHouse[0]) pinky.update(deltaTime, map.getGhostWalls());
         if (!ghostInHouse[1]) inky.update(deltaTime, map.getGhostWalls());
         if (!ghostInHouse[2]) clyde.update(deltaTime, map.getGhostWalls());
@@ -304,29 +357,19 @@ void Game::update(float deltaTime) {
         scoreText.setString("Punkty: " + std::to_string(score));
         timeText.setString("Czas: " + formatTime(gameTime));
 
-        // zakoñczenie gry po zderzeniu pacmana z duszkiem
+        // zakonczenie gry po zderzeniu pacmana z duszkiem
         if (pacman.getBounds().intersects(blinky.getBounds()) ||
             pacman.getBounds().intersects(pinky.getBounds()) ||
             pacman.getBounds().intersects(inky.getBounds()) ||
             pacman.getBounds().intersects(clyde.getBounds())) {
             gameState = "GAME_OVER";
-            saveScore(score, "scores.txt");
         }
-
         // wygrana
         if (map.getDots().empty()) {
             gameState = "WIN";
-
-            // zapis wyniku do pliku
-            std::ofstream file("scores.txt", std::ios::app);
-            if (file.is_open()) {
-                file << score << "\n";
-                file.close();
-            }
         }
     }
 }
-
 // uwolnienie kolejnego duszka
 void Game::releaseNextGhost() {
     if (ghostReleaseCounter < ghostInHouse.size()) {
@@ -335,7 +378,6 @@ void Game::releaseNextGhost() {
         releaseThreshold += 250;
     }
 }
-
 // renderowanie gry
 void Game::render() {
     window.clear();
@@ -361,17 +403,17 @@ void Game::render() {
         }
     }
     else {
-        // t³o po zakoñczeniu gry
+        // t³o po zakonczeniu gry
         sf::RectangleShape background(sf::Vector2f(mapWidth * tileSize + sidebarWidth, mapHeight * tileSize));
         background.setFillColor(sf::Color::Black);
         window.draw(background);
 
-        // wyœwietlanie napisu wygranej
+        // wyswietlanie napisu wygranej
         if (gameState == "WIN") {
             window.draw(winText);
         }
         else if (gameState == "GAME_OVER") {
-            // wyœwietlanie napisu przegranej
+            // wyswietlanie napisu przegranej
             sf::Text gameOverText;
             gameOverText.setFont(font);
             gameOverText.setString("KONIEC GRY");
@@ -386,13 +428,10 @@ void Game::render() {
 
     window.display();
 }
-
-
-
 // funkcja do wczytywania wynikow z pliku
 std::string loadScores(const std::string& filename) {
     std::ifstream file(filename); // otwarcie pliku z wynikami
-    if (!file.is_open()) { // sprawdzenie, czy plik zostal otwarty
+    if (!file.is_open()) { // sprawdzenie czy plik zostal otwarty
         return "Brak dostepnych wynikow."; // w przypadku braku pliku zwracamy komunikat
     }
 
@@ -406,23 +445,25 @@ std::string loadScores(const std::string& filename) {
     return scoresStream.str(); // zwrocenie wynikow w formie tekstu
 }
 
+
 int main() {
     // utworzenie okna gry
     sf::RenderWindow window(sf::VideoMode(800, 600), "Menu gry Pacman");
-    sf::Clock clock; // stoper do obliczania czasu
+    sf::Clock clock; // Stoper do obliczania czasu
 
-    // utworzenie obiektu gwiazdozbioru i menu
+    //utworzenie obiektu gwiazdozbioru i menu
     Gwiazdozbior gwiazdozbior(200, window);
     Menu menu(800, 600, &gwiazdozbior);
 
     // wczytanie czcionki
     sf::Font font;
     if (!font.loadFromFile("MadimiOne-Regular.ttf")) {
-        std::cerr << "Blad ladowania czcionki" << std::endl;
+        std::cerr << "B³¹d ³adowania czcionki" << std::endl;
         return -1; // zakoncz program w przypadku bledu
     }
 
     bool showInstructions = false; // flaga do kontrolowania wyswietlania instrukcji
+    bool showScores = false;       // flaga do kontrolowania wyœwietlania wynikow
 
     // tekst instrukcji
     sf::Text instructionsText;
@@ -430,70 +471,59 @@ int main() {
     instructionsText.setCharacterSize(18);
     instructionsText.setFillColor(sf::Color::White);
     instructionsText.setString(L"Witaj u¿ytkowniku w grze imituj¹cej grê PACMAN.\n\n"
-                            L"Twoim zadaniem jako tytu³owy PACMAN jest \n"
-                            L"unikanie duszków oraz zbieranie groszków,\n"
-                            L"które daj¹ ci punkty (1 groszek - 10 punktów).\n\n"
-                            L"W grze znajduj¹ siê 4 duszki:\n"
-                            L"- Blinky, który bêdzie ciê œciga³\n"
-                            L"- Pinky, który bêdzie próbowa³ zablokowaæ ci drogê\n"
-                            L"- Inky, który porusza siê ca³kowicie losowo\n"
-                            L"- Clyde, który jest trochê strachliwy\n\n"
-                            L"Pacmanem steruje siê za pomoc¹ strza³ek.\n\n"
-                            L"Gdy duszek ciê z³apie gra siê koñczy.\n"
-                            L"W trakcie gry, wciskaj¹c klawisz ESC, mo¿esz j¹ zatrzymaæ.\n\n"
-                            L"W Menu poruszamy siê strza³kami i wybieramy opcje\n"
-                            L"wciskaj¹c klawisz ENTER.\n\n"
-                            L"Tym samym klawiszem zamykamy grê w razie zwyciêstwa\n"
-                            L"lub pora¿ki.\n\n"
-                            L"Powodzenia!!!");
+        L"Twoim zadaniem jako tytu³owy PACMAN jest \n"
+        L"unikanie duszków oraz zbieranie groszków,\n"
+        L"które daj¹ ci punkty (1 groszek - 10 punktów).\n\n"
+        L"W grze znajduj¹ siê 4 duszki:\n"
+        L"- Blinky, który bêdzie ciê œciga³\n"
+        L"- Pinky, który bêdzie próbowa³ zablokowaæ ci drogê\n"
+        L"- Inky, który porusza siê ca³kowicie losowo\n"
+        L"- Clyde, który jest trochê strachliwy\n\n"
+        L"Pacmanem steruje siê za pomoc¹ strza³ek.\n\n"
+        L"Gdy duszek ciê z³apie gra siê koñczy.\n"
+        L"W trakcie gry, wciskaj¹c klawisz ESC, mo¿esz j¹ zatrzymaæ.\n\n"
+        L"W Menu poruszamy siê strza³kami i wybieramy opcje\n"
+        L"wciskaj¹c klawisz ENTER.\n\n"
+        L"Tym samym klawiszem zamykamy grê w razie zwyciêstwa\n"
+        L"lub pora¿ki.\n\n"
+        L"Powodzenia!!!");
     instructionsText.setPosition(50, 50);
-
     // glowna petla programu
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                window.close(); // zamkniecie okna
+                window.close();
             }
-
-            // obsluga nacisniecia klawiszy
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F1) {
-                showInstructions = !showInstructions; // przelaczanie wyswietlania instrukcji
+            // oblsuga klawisza pomocy
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::F1) {
+                    showInstructions = !showInstructions; // przelaczenie wyswietlania instrukcji
+                }
+                else if (showScores && event.key.code == sf::Keyboard::Escape) {
+                    // powrot do menu
+                    showScores = false;
+                }
             }
-
-            // jesli instrukcje nie sa wyswietlane
-            if (!showInstructions) {
-                int action = menu.handleInput(event); // obsluga wejsciowego zdarzenia
+            // jesli instrukcje i wyniki nie sa wyswietlane
+            if (!showInstructions && !showScores) {
+                int action = menu.handleInput(event); // oblsuga zdarzenia wejsciowego
                 if (action != -1) {
                     if (action == 0) {
-                        // rozpoczecie gry
+                        // wyswietlanie okna do wprowadzenia nazwy gracza
+                        std::string playerName = getPlayerName(window, font);
+
+                        // rozpczecieie gry
                         Game game;
                         game.run();
+                        // po zakonczeniu gry zapisanie wyniku
+                        saveScore(playerName, game.getScore(), "scores.txt");
                     }
                     else if (action == 1) {
-                        // pokazanie wynikow
-                        window.clear();
-                        sf::Text scoresText;
-                        scoresText.setFont(font);
-                        scoresText.setCharacterSize(24);
-                        scoresText.setFillColor(sf::Color::White);
-                        scoresText.setString("Wyniki:\n\n" + loadScores("scores.txt"));
-                        scoresText.setPosition(50, 50);
-
-                        gwiazdozbior.draw(); // rysowanie gwiazdozbioru
-                        window.draw(scoresText); // rysowanie wynikow
-                        window.display();
-
-                        // czekanie na nacisniecie klawisza przed powrotem do menu
-                        while (true) {
-                            sf::Event scoreEvent;
-                            if (window.pollEvent(scoreEvent) && scoreEvent.type == sf::Event::KeyPressed) {
-                                break; // po nacisnieciu dowolnego klawisza wychodzimy z okna wynikow
-                            }
-                        }
+                        // pokazanie wyników
+                        showScores = true;
                     }
                     else if (action == 2) {
-                        // zamkniecie okna
                         window.close();
                     }
                 }
@@ -502,24 +532,36 @@ int main() {
 
         // aktualizacja stanu gry
         float deltaTime = clock.restart().asSeconds();
-        gwiazdozbior.update(deltaTime); // aktualizacja gwiazdozbioru
+        gwiazdozbior.update(deltaTime);
 
         window.clear(sf::Color::Black); // czyszczenie okna
-        gwiazdozbior.draw(); // rysowanie gwiazdozbioru
+        gwiazdozbior.draw();            // rysowanie gwiazdozbioru
 
-        // rysowanie instrukcji, jeœli s¹ wlaczone
         if (showInstructions) {
+            // rysowanie instrukcji
             window.draw(instructionsText);
+        }
+        else if (showScores) {
+            // rysowanie wynikow
+            sf::Text scoresText;
+            scoresText.setFont(font);
+            scoresText.setCharacterSize(24);
+            scoresText.setFillColor(sf::Color::White);
+            scoresText.setString("Ostatnie wyniki:\n\n" + loadScores("scores.txt"));
+            scoresText.setPosition(50, 50);
+
+            window.draw(scoresText);
         }
         else {
             menu.draw(window); // rysowanie menu
         }
 
-        window.display(); // wyswietlenie zmian na ekranie
+        window.display(); // wyswietlanie zmian na ekranie
     }
 
     return 0; // zakonczenie programu
 }
+
 
 
 
