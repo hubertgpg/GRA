@@ -17,6 +17,7 @@
 #include <iostream>
 #include <string>
 #include <locale>
+#include <algorithm>
 
 // funkcja formatujaca czas na format mm:ss
 std::string formatTime(float timeInSeconds) {
@@ -248,8 +249,8 @@ void Game::run() {
 }
 
 // funkcja do wczytania nazwy gracza
-std::string getPlayerName(sf::RenderWindow& window, sf::Font& font) {
-    sf::Text promptText(L"Podaj nazwe gracza: ", font, 24);
+std::wstring getPlayerName(sf::RenderWindow& window, sf::Font& font) {
+    sf::Text promptText(L"Podaj nazwê gracza: ", font, 24);
     promptText.setFillColor(sf::Color::White);
     promptText.setPosition(50, 50);
 
@@ -257,7 +258,7 @@ std::string getPlayerName(sf::RenderWindow& window, sf::Font& font) {
     inputText.setFillColor(sf::Color::White);
     inputText.setPosition(50, 100);
 
-    std::string playerName;
+    std::wstring playerName;
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -297,33 +298,51 @@ std::string getPlayerName(sf::RenderWindow& window, sf::Font& font) {
     return playerName; // powrot, jesli okno zostalo zamkniete
 }
 
-// funkcja do zapisywania wynikow z nazwa gracza
-void saveScore(const std::string& playerName, int score, const std::string& filename) {
-    std::vector<std::string> scores;
+struct Score {
+    std::wstring playerName;
+    int points;
 
-    // odczytanie wynikow z pliku
-    std::ifstream inputFile(filename);
+    // serializacja wyniku do pliku
+    void save(std::ofstream& outFile) const {
+        size_t nameLength = playerName.size();
+        outFile.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+        outFile.write(reinterpret_cast<const char*>(playerName.data()), nameLength * sizeof(wchar_t));
+        outFile.write(reinterpret_cast<const char*>(&points), sizeof(points));
+    }
+
+    // deserializacja wyniku z pliku
+    void load(std::ifstream& inFile) {
+        size_t nameLength;
+        inFile.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
+        playerName.resize(nameLength);
+        inFile.read(reinterpret_cast<char*>(playerName.data()), nameLength * sizeof(wchar_t));
+        inFile.read(reinterpret_cast<char*>(&points), sizeof(points));
+    }
+};
+
+// funkcja do zapisywania wynikow z nazwa gracza
+void saveScore(const std::wstring& playerName, int score, const std::string& filename) {
+    std::vector<Score> scores;
+
+    // odczytaj istniejace wyniki
+    std::ifstream inputFile(filename, std::ios::binary);
     if (inputFile.is_open()) {
-        std::string line;
-        while (std::getline(inputFile, line)) {
-            scores.push_back(line);
+        while (!inputFile.eof()) {
+            Score s;
+            s.load(inputFile);
+            if (inputFile) scores.push_back(s);
         }
         inputFile.close();
     }
 
-    // dodanie nowego wyniku
-    scores.push_back(playerName + ": " + std::to_string(score));
+    // dodaj nowy wynik
+    scores.push_back({ playerName, score });
 
-    // ograniczenie liczby zapisanych wynikow do 15
-    if (scores.size() > 15) {
-        scores.erase(scores.begin(), scores.end() - 15);
-    }
-
-    // zapisanie wynikow do pliku
-    std::ofstream outputFile(filename, std::ios::trunc);
+    // zapisz wszystkie wyniki do pliku
+    std::ofstream outputFile(filename, std::ios::binary | std::ios::trunc);
     if (outputFile.is_open()) {
-        for (const std::string& s : scores) {
-            outputFile << s << "\n";
+        for (const Score& s : scores) {
+            s.save(outputFile);
         }
         outputFile.close();
     }
@@ -403,7 +422,7 @@ void Game::render() {
         }
     }
     else {
-        // t³o po zakonczeniu gry
+        // tlo po zakonczeniu gry
         sf::RectangleShape background(sf::Vector2f(mapWidth * tileSize + sidebarWidth, mapHeight * tileSize));
         background.setFillColor(sf::Color::Black);
         window.draw(background);
@@ -429,26 +448,42 @@ void Game::render() {
     window.display();
 }
 // funkcja do wczytywania wynikow z pliku
-std::string loadScores(const std::string& filename) {
-    std::ifstream file(filename); // otwarcie pliku z wynikami
-    if (!file.is_open()) { // sprawdzenie czy plik zostal otwarty
-        return "Brak dostepnych wynikow."; // w przypadku braku pliku zwracamy komunikat
+std::wstring loadScores(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
+        return L"Brak dostêpnych wyników.";
     }
 
-    std::stringstream scoresStream; // strumien tekstowy do przechowywania wynikow
-    std::string line;
-    int position = 1; // numeracja wynikow
-    while (std::getline(file, line)) { // wczytanie kazdego wiersza z pliku
-        scoresStream << position++ << ". " << line << "\n"; // dodanie wyniku do strumienia
+    // wczytaj wyniki
+    std::vector<Score> scores;
+    while (!file.eof()) {
+        Score s;
+        s.load(file);
+        if (file) scores.push_back(s);
+    }
+    file.close();
+
+    // posortuj wyniki malejaco po punktach
+    std::sort(scores.begin(), scores.end(), [](const Score& a, const Score& b) {
+        return a.points > b.points;
+        });
+
+    // przygotuj tekst do wyswietlenia (tylko 15 najlepszych wyników)
+    std::wstringstream scoresStream;
+    int position = 1;
+    for (const auto& s : scores) {
+        if (position > 15) break;
+        scoresStream << position++ << L". " << s.playerName << L": " << s.points << L"\n";
     }
 
-    return scoresStream.str(); // zwrocenie wynikow w formie tekstu
+    return scoresStream.str();
 }
+
 
 
 int main() {
     // utworzenie okna gry
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Menu gry Pacman");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "MENU");
     sf::Clock clock; // Stoper do obliczania czasu
 
     //utworzenie obiektu gwiazdozbioru i menu
@@ -511,13 +546,13 @@ int main() {
                 if (action != -1) {
                     if (action == 0) {
                         // wyswietlanie okna do wprowadzenia nazwy gracza
-                        std::string playerName = getPlayerName(window, font);
+                        std::wstring playerName = getPlayerName(window, font);
 
                         // rozpczecieie gry
                         Game game;
                         game.run();
                         // po zakonczeniu gry zapisanie wyniku
-                        saveScore(playerName, game.getScore(), "scores.txt");
+                        saveScore(playerName, game.getScore(), "scores.dat");
                     }
                     else if (action == 1) {
                         // pokazanie wyników
@@ -547,7 +582,7 @@ int main() {
             scoresText.setFont(font);
             scoresText.setCharacterSize(24);
             scoresText.setFillColor(sf::Color::White);
-            scoresText.setString("Ostatnie wyniki:\n\n" + loadScores("scores.txt"));
+            scoresText.setString(L"Najlepsi z najlepszych:\n\n" + loadScores("scores.dat"));
             scoresText.setPosition(50, 50);
 
             window.draw(scoresText);

@@ -27,4 +27,4 @@ private:
     Gwiazdozbior* gwiazdozbior;         // wskaznik na gwiazdozbior, do ktorego menu odnosi sie
 };
 
-#endif // MENU_H
+#endif 

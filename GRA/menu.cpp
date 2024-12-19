@@ -21,7 +21,7 @@ Menu::Menu(float width, float height, Gwiazdozbior* gwiazdozbiorPtr)
     title.setPosition(width / 2.0f, height / 6.0f);
 
     // lista opcji menu
-    std::vector<std::u32string> menuItems = { U"Graj", U"Punkty", U"Wyjœcie" }; // u¿ycie UTF-32
+    std::vector<std::u32string> menuItems = { U"Graj", U"Wyniki", U"Wyjœcie" }; // u¿ycie UTF-32
     for (size_t i = 0; i < menuItems.size(); ++i) {
         sf::Text option;
         option.setFont(font);
