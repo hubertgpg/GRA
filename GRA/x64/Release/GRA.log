@@ -1,7 +1,1 @@
-﻿  menu.cpp
-C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\menu.cpp(58,74): warning C4267: "=": konwersja z "size_t" do "int", możliwa utrata danych
-  Trwa generowanie kodu
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 1644 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Zakończono generowanie kodu
-  GRA.vcxproj -> C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\x64\Release\GRA.exe
+﻿  GRA.vcxproj -> C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\x64\Release\GRA.exe
