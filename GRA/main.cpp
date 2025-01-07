@@ -348,6 +348,124 @@ void saveScore(const std::wstring& playerName, int score, const std::string& fil
     }
 }
 
+// funkcja do wczytywania wynikow z pliku
+std::wstring loadScores(const std::string& filename) {
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open()) {
+        return L"Brak dostêpnych wyników.";
+    }
+
+    // wczytaj wyniki
+    std::vector<Score> scores;
+    while (!file.eof()) {
+        Score s;
+        s.load(file);
+        if (file) scores.push_back(s);
+    }
+    file.close();
+
+    // posortuj wyniki malejaco po punktach
+    std::sort(scores.begin(), scores.end(), [](const Score& a, const Score& b) {
+        return a.points > b.points;
+        });
+
+    // przygotuj tekst do wyswietlenia (tylko 15 najlepszych wyników)
+    std::wstringstream scoresStream;
+    int position = 1;
+    for (const auto& s : scores) {
+        if (position > 15) break;
+        scoresStream << position++ << L". " << s.playerName << L": " << s.points << L"\n";
+    }
+
+    return scoresStream.str();
+}
+
+class GameApp {
+public:
+    GameApp()
+        : window(sf::VideoMode(800, 600), "MENU"),
+        gwiazdozbior(200, window),
+        menu(800, 600, &gwiazdozbior),
+        showScores(false) {
+        if (!font.loadFromFile("MadimiOne-Regular.ttf")) {
+            std::cerr << "Blad" << std::endl;
+            throw std::runtime_error("Nie mozna wczytac czcionki");
+        }
+    }
+
+    void run() {
+        while (window.isOpen()) {
+            handleEvents();
+            update();
+            render();
+        }
+    }
+
+private:
+    sf::RenderWindow window;
+    sf::Clock clock;
+    Gwiazdozbior gwiazdozbior;
+    Menu menu;
+    sf::Font font;
+    bool showScores;
+
+    void handleEvents() {
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                window.close();
+            }
+
+            if (!showScores) {
+                int action = menu.handleInput(event);
+                if (action != -1) {
+                    if (action == 0) {
+                        std::wstring playerName = getPlayerName(window, font);
+                        Game game;
+                        game.run();
+                        saveScore(playerName, game.getScore(), "scores.dat");
+                    }
+                    else if (action == 1) {
+                        showScores = true;
+                    }
+                    else if (action == 2) {
+                        window.close();
+                    }
+                }
+            }
+            else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                showScores = false;
+            }
+        }
+    }
+
+    void update() {
+        float deltaTime = clock.restart().asSeconds();
+        gwiazdozbior.update(deltaTime);
+    }
+
+    void render() {
+        window.clear(sf::Color::Black);
+        gwiazdozbior.draw();
+
+        if (showScores) {
+            sf::Text scoresText;
+            scoresText.setFont(font);
+            scoresText.setCharacterSize(24);
+            scoresText.setFillColor(sf::Color::White);
+            scoresText.setString(L"Najlepsi z najlepszych:\n\n" + loadScores("scores.dat"));
+            scoresText.setPosition(50, 50);
+
+            window.draw(scoresText);
+        }
+        else {
+            menu.draw(window);
+        }
+
+        window.display();
+    }
+};
+
 // aktualizacja stanu gry
 void Game::update(float deltaTime) {
     if (gameState == "PLAYING") {
@@ -397,6 +515,8 @@ void Game::releaseNextGhost() {
         releaseThreshold += 250;
     }
 }
+
+
 // renderowanie gry
 void Game::render() {
     window.clear();
@@ -447,158 +567,13 @@ void Game::render() {
 
     window.display();
 }
-// funkcja do wczytywania wynikow z pliku
-std::wstring loadScores(const std::string& filename) {
-    std::ifstream file(filename, std::ios::binary);
-    if (!file.is_open()) {
-        return L"Brak dostêpnych wyników.";
-    }
-
-    // wczytaj wyniki
-    std::vector<Score> scores;
-    while (!file.eof()) {
-        Score s;
-        s.load(file);
-        if (file) scores.push_back(s);
-    }
-    file.close();
-
-    // posortuj wyniki malejaco po punktach
-    std::sort(scores.begin(), scores.end(), [](const Score& a, const Score& b) {
-        return a.points > b.points;
-        });
-
-    // przygotuj tekst do wyswietlenia (tylko 15 najlepszych wyników)
-    std::wstringstream scoresStream;
-    int position = 1;
-    for (const auto& s : scores) {
-        if (position > 15) break;
-        scoresStream << position++ << L". " << s.playerName << L": " << s.points << L"\n";
-    }
-
-    return scoresStream.str();
-}
-
-
 
 int main() {
-    // utworzenie okna gry
-    sf::RenderWindow window(sf::VideoMode(800, 600), "MENU");
-    sf::Clock clock; // Stoper do obliczania czasu
+    GameApp app;
+    app.run();
 
-    //utworzenie obiektu gwiazdozbioru i menu
-    Gwiazdozbior gwiazdozbior(200, window);
-    Menu menu(800, 600, &gwiazdozbior);
-
-    // wczytanie czcionki
-    sf::Font font;
-    if (!font.loadFromFile("MadimiOne-Regular.ttf")) {
-        std::cerr << "B³¹d ³adowania czcionki" << std::endl;
-        return -1; // zakoncz program w przypadku bledu
-    }
-
-    bool showInstructions = false; // flaga do kontrolowania wyswietlania instrukcji
-    bool showScores = false;       // flaga do kontrolowania wyœwietlania wynikow
-
-    // tekst instrukcji
-    sf::Text instructionsText;
-    instructionsText.setFont(font);
-    instructionsText.setCharacterSize(18);
-    instructionsText.setFillColor(sf::Color::White);
-    instructionsText.setString(L"Witaj u¿ytkowniku w grze imituj¹cej grê PACMAN.\n\n"
-        L"Twoim zadaniem jako tytu³owy PACMAN jest \n"
-        L"unikanie duszków oraz zbieranie groszków,\n"
-        L"które daj¹ ci punkty (1 groszek - 10 punktów).\n\n"
-        L"W grze znajduj¹ siê 4 duszki:\n"
-        L"- Blinky, który bêdzie ciê œciga³\n"
-        L"- Pinky, który bêdzie próbowa³ zablokowaæ ci drogê\n"
-        L"- Inky, który porusza siê ca³kowicie losowo\n"
-        L"- Clyde, który jest trochê strachliwy\n\n"
-        L"Pacmanem steruje siê za pomoc¹ strza³ek.\n\n"
-        L"Gdy duszek ciê z³apie gra siê koñczy.\n"
-        L"W trakcie gry, wciskaj¹c klawisz ESC, mo¿esz j¹ zatrzymaæ.\n\n"
-        L"W Menu poruszamy siê strza³kami i wybieramy opcje\n"
-        L"wciskaj¹c klawisz ENTER.\n\n"
-        L"Tym samym klawiszem zamykamy grê w razie zwyciêstwa\n"
-        L"lub pora¿ki.\n\n"
-        L"Powodzenia!!!");
-    instructionsText.setPosition(50, 50);
-    // glowna petla programu
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-            }
-            // oblsuga klawisza pomocy
-            if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::F1) {
-                    showInstructions = !showInstructions; // przelaczenie wyswietlania instrukcji
-                }
-                else if (showScores && event.key.code == sf::Keyboard::Escape) {
-                    // powrot do menu
-                    showScores = false;
-                }
-            }
-            // jesli instrukcje i wyniki nie sa wyswietlane
-            if (!showInstructions && !showScores) {
-                int action = menu.handleInput(event); // oblsuga zdarzenia wejsciowego
-                if (action != -1) {
-                    if (action == 0) {
-                        // wyswietlanie okna do wprowadzenia nazwy gracza
-                        std::wstring playerName = getPlayerName(window, font);
-
-                        // rozpczecieie gry
-                        Game game;
-                        game.run();
-                        // po zakonczeniu gry zapisanie wyniku
-                        saveScore(playerName, game.getScore(), "scores.dat");
-                    }
-                    else if (action == 1) {
-                        // pokazanie wyników
-                        showScores = true;
-                    }
-                    else if (action == 2) {
-                        window.close();
-                    }
-                }
-            }
-        }
-
-        // aktualizacja stanu gry
-        float deltaTime = clock.restart().asSeconds();
-        gwiazdozbior.update(deltaTime);
-
-        window.clear(sf::Color::Black); // czyszczenie okna
-        gwiazdozbior.draw();            // rysowanie gwiazdozbioru
-
-        if (showInstructions) {
-            // rysowanie instrukcji
-            window.draw(instructionsText);
-        }
-        else if (showScores) {
-            // rysowanie wynikow
-            sf::Text scoresText;
-            scoresText.setFont(font);
-            scoresText.setCharacterSize(24);
-            scoresText.setFillColor(sf::Color::White);
-            scoresText.setString(L"Najlepsi z najlepszych:\n\n" + loadScores("scores.dat"));
-            scoresText.setPosition(50, 50);
-
-            window.draw(scoresText);
-        }
-        else {
-            menu.draw(window); // rysowanie menu
-        }
-
-        window.display(); // wyswietlanie zmian na ekranie
-    }
-
-    return 0; // zakonczenie programu
+    return 0;
 }
-
-
-
 
 
 // Serdeczne podziêkowania dla twórców tekstur i czcionki.
