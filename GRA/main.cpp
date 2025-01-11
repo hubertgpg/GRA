@@ -382,6 +382,7 @@ std::wstring loadScores(const std::string& filename) {
 
 class GameApp {
 public:
+    // konstruktor, ustawia okno gry, gwiazdozbior i menu, laduje czcionke
     GameApp()
         : window(sf::VideoMode(800, 600), "MENU"),
         gwiazdozbior(200, window),
@@ -393,62 +394,68 @@ public:
         }
     }
 
+    // uruchamia petle glowna gry
     void run() {
         while (window.isOpen()) {
-            handleEvents();
-            update();
-            render();
+            handleEvents(); // obs³uga zdarzeñ
+            update();       // aktualizacja stanu gry
+            render();       // rysowanie elementow na ekranie
         }
     }
 
 private:
-    sf::RenderWindow window;
-    sf::Clock clock;
-    Gwiazdozbior gwiazdozbior;
-    Menu menu;
-    sf::Font font;
-    bool showScores;
+    sf::RenderWindow window; // okno gry
+    sf::Clock clock;         // zegar do mierzenia czasu
+    Gwiazdozbior gwiazdozbior; // obiekt gwiazdozbioru
+    Menu menu;               // obiekt menu
+    sf::Font font;           // czcionka do tekstu
+    bool showScores;         // flaga do wyswietlania wynikow
 
+    // metoda obslugujaca zdarzenia uzytkownika
     void handleEvents() {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                window.close();
+                window.close(); // zamyka okno gry
             }
 
             if (!showScores) {
-                int action = menu.handleInput(event);
+                int action = menu.handleInput(event); // sprawdza akcje w menu
                 if (action != -1) {
                     if (action == 0) {
-                        std::wstring playerName = getPlayerName(window, font);
-                        Game game;
-                        game.run();
-                        saveScore(playerName, game.getScore(), "scores.dat");
+                        // zaczyna gre
+                        std::wstring playerName = getPlayerName(window, font); // pobiera nazwe gracza
+                        Game game; // tworzy gre
+                        game.run(); // uruchamia gre
+                        saveScore(playerName, game.getScore(), "scores.dat"); // zapisuje wynik
                     }
                     else if (action == 1) {
-                        showScores = true;
+                        showScores = true; // wlacza widok wynikow
                     }
                     else if (action == 2) {
-                        window.close();
+                        window.close(); // zamyka gre
                     }
                 }
             }
             else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
-                showScores = false;
+                showScores = false; // wylacza widok wynikow
             }
         }
     }
 
+    // metoda aktualizujaca stan gry
     void update() {
-        float deltaTime = clock.restart().asSeconds();
-        gwiazdozbior.update(deltaTime);
+        float deltaTime = clock.restart().asSeconds(); // czas od ostatniej klatki
+        gwiazdozbior.update(deltaTime); // aktualizuje gwiazdozbior
     }
 
+    // metoda rysujaca elementy gry na ekranie
     void render() {
-        window.clear(sf::Color::Black);
-        gwiazdozbior.draw();
+        window.clear(sf::Color::Black); // czysci ekran na czarno
+        gwiazdozbior.draw(); // rysuje gwiazdozbior
 
         if (showScores) {
+            // rysuje ekran wynikow
             sf::Text scoresText;
             scoresText.setFont(font);
             scoresText.setCharacterSize(24);
@@ -459,10 +466,11 @@ private:
             window.draw(scoresText);
         }
         else {
+            // rysuje menu
             menu.draw(window);
         }
 
-        window.display();
+        window.display(); // wyswietla wszystko na ekranie
     }
 };
 

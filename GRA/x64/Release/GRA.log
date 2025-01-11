@@ -1,6 +1,27 @@
-﻿  main.cpp
+﻿  Clyde.cpp
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244: "argument": konwersja z "T" do "T", możliwa utrata danych
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         with
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         [
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:             T=int
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         ]
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         and
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         [
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:             T=float
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,71): warning C4244:         ]
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244: "argument": konwersja z "T" do "T", możliwa utrata danych
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         with
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         [
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:             T=int
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         ]
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         and
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         [
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:             T=float
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(30,54): warning C4244:         ]
+C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\GRA\Clyde.cpp(59,21): warning C4244: "return": konwersja z "double" do "float", możliwa utrata danych
+  main.cpp
   Trwa generowanie kodu
-  Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 1652 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  3 of 1648 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
   Zakończono generowanie kodu
   GRA.vcxproj -> C:\Users\huber\OneDrive\Pulpit\C++ SFML\GRA\x64\Release\GRA.exe

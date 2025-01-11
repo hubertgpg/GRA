@@ -19,7 +19,7 @@ Menu::Menu(float width, float height, Gwiazdozbior* gwiazdozbiorPtr)
     title.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
     title.setPosition(width / 2.0f, height / 6.0f);
 
-    // lista opcji menu
+    // definiowanie opcji menu
     std::vector<std::u32string> menuItems = { U"Graj", U"Wyniki", U"Wyjœcie" };
     for (size_t i = 0; i < menuItems.size(); ++i) {
         sf::Text option;
@@ -35,7 +35,7 @@ Menu::Menu(float width, float height, Gwiazdozbior* gwiazdozbiorPtr)
         options.push_back(option);
     }
 
-    // tekst instrukcji
+    // ustawienia tekstu instrukcji
     instructionsText.setFont(font);
     instructionsText.setCharacterSize(18);
     instructionsText.setFillColor(sf::Color::White);
@@ -57,41 +57,47 @@ Menu::Menu(float width, float height, Gwiazdozbior* gwiazdozbiorPtr)
     instructionsText.setPosition(50, 50);
 }
 
+// metoda rysujaca menu
 void Menu::draw(sf::RenderWindow& window) {
     if (showInstructions) {
-        window.draw(instructionsText); // rysowanie tylko instrukcji
+        window.draw(instructionsText); // rysowanie tekstu instrukcji
     }
     else {
-        gwiazdozbior->draw();
-        window.draw(title);
+        gwiazdozbior->draw(); // rysowanie gwiazdozbioru w tle
+        window.draw(title); // rysowanie tytulu
 
         for (const auto& option : options) {
-            window.draw(option);
+            window.draw(option); // rysowanie opcji menu
         }
     }
 }
 
+// metoda obslugujaca wejscie uzytkownika w menu
 int Menu::handleInput(sf::Event& event) {
     if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::F1) {
-            showInstructions = true; // wyœwietlanie instrukcji
+            showInstructions = true; // pokaz instrukcje
+
             return -1;
         }
         else if (showInstructions && event.key.code == sf::Keyboard::Escape) {
-            showInstructions = false; // zamkniêcie instrukcji
+            showInstructions = false; // zamknij instrukcje
             return -1;
         }
+        // przejscie w gore w menu
         else if (!showInstructions) {
             if (event.key.code == sf::Keyboard::Up) {
                 options[selectedItemIndex].setFillColor(sf::Color::White);
                 selectedItemIndex = (selectedItemIndex - 1 + options.size()) % options.size();
                 options[selectedItemIndex].setFillColor(sf::Color::Yellow);
             }
+            // przejscie w dol w menu
             else if (event.key.code == sf::Keyboard::Down) {
                 options[selectedItemIndex].setFillColor(sf::Color::White);
                 selectedItemIndex = (selectedItemIndex + 1) % options.size();
                 options[selectedItemIndex].setFillColor(sf::Color::Yellow);
             }
+            // zwroc wybrana opcje
             else if (event.key.code == sf::Keyboard::Enter) {
                 return selectedItemIndex;
             }

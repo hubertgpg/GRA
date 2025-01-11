@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Blinky.cpp" />
     <ClCompile Include="Clyde.cpp" />
+    <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="Gwiazdozbior.cpp" />
     <ClCompile Include="Inky.cpp" />
     <ClCompile Include="main.cpp" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="Blinky.h" />
     <ClInclude Include="Clyde.h" />
+    <ClInclude Include="Ghost.h" />
     <ClInclude Include="Gwiazdozbior.h" />
     <ClInclude Include="Inky.h" />
     <ClInclude Include="MapData.h" />
